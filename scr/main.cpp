@@ -3,11 +3,11 @@
 #include <GLFW/glfw3.h>
 #include "shader.h"
 #include "camera.h"
+#include "texture.h"
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 
 int main() {
     glfwInit();
@@ -22,10 +22,11 @@ int main() {
     
     MainCam.calculateProjectionMatrix(glm::radians(90.0f), 1920.0/1080.0, 0.05, 1000.0);
 
-    float triangle[] = {
-        -0.5f,-0.5f,1.0f, 1.0f,0.0f,0.0f,
-        0.5f,-0.5f,1.0f, 0.0f,1.0f,0.0f,
-        0.0f,0.5f,1.0f, 0.0f,0.0f,1.0f
+    float verticies[] = {
+        0.0f,0.0f,0.0f, 1.0f,1.0f,
+        1.0f,0.0f,0.0f, 0.0f,1.0f,
+        1.0f,1.0f,0.0f, 0.0f,0.0f,
+        0.0f,1.0f,0.0f, 1.0f,0.0f
     };
 
     unsigned int VBO, VAO;
@@ -34,16 +35,18 @@ int main() {
     glBindVertexArray(VAO);
     
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
     
     shader Shaders("../shaders/triangle.vs.glsl", "../shaders/triangle.fs.glsl");
-
+    textures Texture("../textures/textureTest.png");
+    
     Shaders.use();
+    Shaders.linkInt("ourTexture", 0);
     glEnable(GL_DEPTH_TEST);
 
     double deltaTime;
@@ -64,17 +67,18 @@ int main() {
         Shaders.linkMat4("mvp", MainCam.calculateMVP(glm::mat4(1.0f)));
         
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        Texture.bind(0);
+        glDrawArrays(GL_QUADS, 0, 4);
 
         MainCam.moveCamera(window, deltaTime);
-
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
-    glDeleteProgram(Shaders.ID);
+    glDeleteProgram(Shaders.ID);    
     glfwTerminate();
 
     return 0;

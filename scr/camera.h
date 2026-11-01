@@ -14,7 +14,7 @@ struct camera {
     glm::vec3 front;
     glm::mat4 ProjectionMatrix;
 
-    camera() : pos(0.0f), dir(0.0f, 90.0f) {}
+    camera() : pos(0.5f,0.5f,-1.0f), dir(0.0f, 90.0f) {}
     camera(glm::vec3 pos, glm::vec2 dir) : pos(pos), dir(dir) {}
 
     glm::mat4 calculateMVP(const glm::mat4 &model) {
@@ -42,7 +42,13 @@ struct camera {
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
             pos.x -= -sin(glm::radians(dir.y)) * DT;
             pos.z -= cos(glm::radians(dir.y)) * DT;
-        } 
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            pos.y += DT;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            pos.y -= DT;
+        }
     }
 };
 
