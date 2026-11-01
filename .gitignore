@@ -1,0 +1,7 @@
+build/
+.agents/
+.cursor/
+.gemini/
+.vscode/
+AGENTS.md
+CLAUDE.md
