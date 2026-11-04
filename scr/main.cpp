@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <string>
 
-uint16_t pack(uint8_t x, uint8_t y, uint8_t z, uint8_t dir) {
+uint pack(uint8_t x, uint8_t y, uint8_t z, uint8_t dir) {
     return (uint)(x & 15u) | (uint)((y & 15u) << 4) | (uint)((z & 15u) << 8) | (uint)((dir & 7u) << 12);
 }
 
@@ -36,7 +36,7 @@ int main() {
         0.5f,-0.5f,0.5f, 1.0f,1.0f
     };
 
-    uint16_t positions[] = {
+    uint positions[] = {
         pack(0,0,0,0),
         pack(0,0,0,1),
         pack(0,0,0,2),
@@ -45,9 +45,10 @@ int main() {
         pack(0,0,0,5)
     };
 
-    unsigned int VBO, VAO;
+    unsigned int VBO, VAO, instanceVBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &instanceVBO);
     glBindVertexArray(VAO);
     
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -57,6 +58,9 @@ int main() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions),positions, GL_STATIC_DRAW);
 
     glBindVertexArray(0);
     
@@ -65,11 +69,6 @@ int main() {
     
     Shaders.use();
     Shaders.linkInt("ourTexture", 0);
-    std::string name;
-    for (int i = 0; i < 6; i++) {
-        name = "offsets[" + std::to_string(i) + "]";
-        Shaders.linkUInt(name.c_str(), positions[i]);
-    }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);

@@ -2,11 +2,11 @@
 
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec2 aTex;
+layout(location=2) in uint offset;
 
 out vec2 textCoords;
 
 uniform mat4 mvp;
-uniform uint offsets[4096];
 
 vec3 unpack(uint data, vec3 position) {
     float x = float(data       & 15u);
@@ -39,6 +39,6 @@ vec3 unpack(uint data, vec3 position) {
 }
 
 void main() {
-    gl_Position = mvp * vec4(unpack(offsets[gl_InstanceID], aPos), 1.0);
+    gl_Position = mvp * vec4(unpack(offset, aPos), 1.0);
     textCoords = aTex;
 }
