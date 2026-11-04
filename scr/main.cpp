@@ -9,9 +9,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdint>
+#include <string>
 
-uint16_t pack(uint8_t x, uint8_t y, uint8_t z) {
-    return (uint16_t)(x & 31u << 10) | (uint16_t)(y & 31u << 5) | (uint16_t)(z & 31u);
+uint16_t pack(uint8_t x, uint8_t y, uint8_t z, uint8_t dir) {
+    return (uint)(x & 15u) | (uint)((y & 15u) << 4) | (uint)((z & 15u) << 8) | (uint)((dir & 7u) << 12);
 }
 
 int main() {
@@ -29,21 +30,19 @@ int main() {
     MainCam.calculateProjectionMatrix(glm::radians(90.0f), 1920.0/1080.0, 0.05, 1000.0);
 
     float quadVert[] = {
-        0.0f,0.0f,0.0f, 0.0f,1.0f,
-        0.0f,1.0f,0.0f, 0.0f,0.0f,
-        1.0f,1.0f,0.0f, 1.0f,0.0f,
-        1.0f,0.0f,0.0f, 1.0f,1.0f
+        -0.5f,-0.5f,0.5f, 0.0f,1.0f,
+        -0.5f,0.5f,0.5f, 0.0f,0.0f,
+        0.5f,0.5f,0.5f, 1.0f,0.0f,
+        0.5f,-0.5f,0.5f, 1.0f,1.0f
     };
 
-    uint16_t verticies[] = {
-        pack(0,0,0),
-        pack(1,0,0),
-        pack(0,1,0),
-        pack(1,1,0),
-        pack(0,0,1),
-        pack(1,0,1),
-        pack(0,1,1),
-        pack(1,1,1)
+    uint16_t positions[] = {
+        pack(0,0,0,0),
+        pack(0,0,0,1),
+        pack(0,0,0,2),
+        pack(0,0,0,3),
+        pack(0,0,0,4),
+        pack(0,0,0,5)
     };
 
     unsigned int VBO, VAO;
@@ -54,8 +53,10 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVert), quadVert, GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
     
@@ -64,6 +65,11 @@ int main() {
     
     Shaders.use();
     Shaders.linkInt("ourTexture", 0);
+    std::string name;
+    for (int i = 0; i < 6; i++) {
+        name = "offsets[" + std::to_string(i) + "]";
+        Shaders.linkUInt(name.c_str(), positions[i]);
+    }
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -81,24 +87,22 @@ int main() {
         chrono = glfwGetTime();
         avFPS = (avFPS*static_cast<double>(frames) + 1.0/deltaTime) / static_cast<double>(frames+1);
         frames += 1;
-        // if (frames % 10 == 9) {
-        //     std::cout << "Avrege FPS : " << 1.0/deltaTime << "\n\033[H";
-        // } else {
-        //     std::cout << "Avrege FPS : " << 1.0/deltaTime << "\n";
-        // }
+        std::cout << "Avrege FPS : " << 1.0/deltaTime << "\n\033[F";
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Shaders.linkMat4("mvp", MainCam.calculateMVP(glm::mat4(1.0f)));
         
         glBindVertexArray(VAO);
         Texture.bind(0);
+        glDrawArraysInstanced(GL_QUADS, 0, 4, 6);
+        glBindVertexArray(0);
         
         MainCam.moveCamera(window, deltaTime);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    std::cout << "\033[2J";
+    std::cout << "Avrege FPS : " << 1.0/deltaTime << "\n";
     
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);

@@ -112,6 +112,10 @@ struct shader {
     void linkInt(const char* name, int x) {
         glUniform1i(glGetUniformLocation(ID, name), x);
     }
+
+    void linkUInt(const char* name, uint x) {
+        glUniform1ui(glGetUniformLocation(ID, name), x);
+    }
 };
 
 #endif

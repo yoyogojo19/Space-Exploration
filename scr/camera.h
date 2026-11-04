@@ -14,7 +14,7 @@ struct camera {
     glm::vec3 front;
     glm::mat4 ProjectionMatrix;
 
-    camera() : pos(0.5f,0.5f,-1.0f), dir(0.0f, 90.0f) {}
+    camera() : pos(0.0f,0.0f,-1.0f), dir(0.0f, 90.0f) {}
     camera(glm::vec3 pos, glm::vec2 dir) : pos(pos), dir(dir) {}
 
     glm::mat4 calculateMVP(const glm::mat4 &model) {
