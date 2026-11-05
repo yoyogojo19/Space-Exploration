@@ -9,7 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdint>
-#include <string>
+#include <sys/types.h>
 
 uint pack(uint8_t x, uint8_t y, uint8_t z, uint8_t dir) {
     return (uint)(x & 15u) | (uint)((y & 15u) << 4) | (uint)((z & 15u) << 8) | (uint)((dir & 7u) << 12);
@@ -61,6 +61,11 @@ int main() {
     
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(positions),positions, GL_STATIC_DRAW);
+
+    glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(uint), (void*)0);
+    glEnableVertexAttribArray(2);
+
+    glVertexAttribDivisor(2, 1);
 
     glBindVertexArray(0);
     
