@@ -1,7 +1,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "chunck.h"
+#include "chunk.h"
 #include "shader.h"
 #include "camera.h"
 #include "texture.h"
@@ -34,17 +34,17 @@ int main() {
         0.5f,-0.5f,0.5f, 1.0f,1.0f
     };
 
-    chunck MyChunck;
+    chunk Mychunk;
 
-    for(int i = 0; i < MyChunck.size; i++){
-        for (int k = 0; k < MyChunck.size; k++) {
+    for(int i = 0; i < Mychunk.size; i++){
+        for (int k = 0; k < Mychunk.size; k++) {
             for (int j = 0; j < 2; j++){
-                MyChunck.setBlock(i,j,k,blocks(ROCK));
+                Mychunk.setBlock(i,j,k,blocks(ROCK));
             }
         }
     }
     
-    std::vector<uint> positions = MyChunck.generateTerrin();
+    std::vector<uint> positions = Mychunk.generateTerrin();
     
 
     unsigned int VBO, VAO, instanceVBO;

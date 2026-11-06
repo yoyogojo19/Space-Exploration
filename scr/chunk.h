@@ -18,11 +18,11 @@ uint packPos(uint8_t x, uint8_t y, uint8_t z) {
     return (uint)(x & 15u) | (uint)((y & 15u) << 4) | (uint)((z & 15u) << 8);
 }
 
-struct chunck {
+struct chunk {
     enum blocks data[16][16][16];
     unsigned int pos;
     int size;
-    chunck() : size(16), pos(packPos(0,0,0)) {
+    chunk() : size(16), pos(packPos(0,0,0)) {
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 for (int k = 0; k < size; k++) {
@@ -31,7 +31,7 @@ struct chunck {
             }
         }
     }
-    chunck(uint pos) : size(16), pos(pos) {
+    chunk(uint pos) : size(16), pos(pos) {
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 for (int k = 0; k < size; k++) {
