@@ -1,6 +1,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "chunck.h"
 #include "shader.h"
 #include "camera.h"
 #include "texture.h"
@@ -8,17 +9,14 @@
 #include <glm/trigonometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <cstdint>
 #include <sys/types.h>
+#include <vector>
 
-uint pack(uint8_t x, uint8_t y, uint8_t z, uint8_t dir) {
-    return (uint)(x & 15u) | (uint)((y & 15u) << 4) | (uint)((z & 15u) << 8) | (uint)((dir & 7u) << 12);
-}
 
 int main() {
     glfwInit();
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Minecraft Clone", monitor, NULL); 
+    GLFWwindow* window = glfwCreateWindow(1920, 1080, "Space Exploration Game", monitor, NULL); 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(0);
     std::cout << "\033[2J";
@@ -36,14 +34,18 @@ int main() {
         0.5f,-0.5f,0.5f, 1.0f,1.0f
     };
 
-    uint positions[] = {
-        pack(0,0,0,0),
-        pack(0,0,0,1),
-        pack(0,0,0,2),
-        pack(0,0,0,3),
-        pack(0,0,0,4),
-        pack(0,0,0,5)
-    };
+    chunck MyChunck;
+
+    for(int i = 0; i < MyChunck.size; i++){
+        for (int k = 0; k < MyChunck.size; k++) {
+            for (int j = 0; j < 2; j++){
+                MyChunck.setBlock(i,j,k,blocks(ROCK));
+            }
+        }
+    }
+    
+    std::vector<uint> positions = MyChunck.generateTerrin();
+    
 
     unsigned int VBO, VAO, instanceVBO;
     glGenVertexArrays(1, &VAO);
@@ -60,15 +62,15 @@ int main() {
     glEnableVertexAttribArray(1);
     
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(positions),positions, GL_STATIC_DRAW);
-
+    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(uint), &positions.front(), GL_STATIC_DRAW);
+    
     glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, sizeof(uint), (void*)0);
     glEnableVertexAttribArray(2);
-
-    glVertexAttribDivisor(2, 1);
-
-    glBindVertexArray(0);
     
+    glVertexAttribDivisor(2, 1);
+    
+    glBindVertexArray(0);
+
     shader Shaders("../shaders/triangle.vs.glsl", "../shaders/triangle.fs.glsl");
     textures Texture("../textures/rock.png");
     
@@ -91,14 +93,16 @@ int main() {
         chrono = glfwGetTime();
         avFPS = (avFPS*static_cast<double>(frames) + 1.0/deltaTime) / static_cast<double>(frames+1);
         frames += 1;
-        std::cout << "Avrege FPS : " << 1.0/deltaTime << "\n\033[F";
+        if (frames > 1) {
+            std::cout << "Avrege FPS : " << 1.0/deltaTime << "\n\033[F";
+        }
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Shaders.linkMat4("mvp", MainCam.calculateMVP(glm::mat4(1.0f)));
         
         glBindVertexArray(VAO);
         Texture.bind(0);
-        glDrawArraysInstanced(GL_QUADS, 0, 4, 6);
+        glDrawArraysInstanced(GL_QUADS, 0, 4, positions.size());
         glBindVertexArray(0);
         
         MainCam.moveCamera(window, deltaTime);
